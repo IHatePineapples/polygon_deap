@@ -128,7 +128,7 @@ def main():
 
         print(f'{i},{f[0]},{f[0]-f0}')
 
-        f0 = f
+        f0 = f[0]
 
         # print("avg:", statistics.mean(f))
 
