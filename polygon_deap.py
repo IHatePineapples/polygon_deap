@@ -15,7 +15,6 @@ from PIL import Image, ImageDraw, ImageChops
 MAX = 255 * 200 * 200
 TARGET = Image.open("in/target.png")
 TARGET.load()
-ITERATIONS=20000
 STAT_FITNESSES=[]
 
 
@@ -101,13 +100,14 @@ def main():
     toolbox.register("mutate", mutate, indpb=0.5)
     toolbox.register("mate", tools.cxTwoPoint)
 
-    population = toolbox.population(n=20)
+    population = toolbox.population(n=30)
 
 
     hof = tools.HallOfFame(3)
     stats = tools.Statistics(lambda x: x.fitness.values[0])
     #stats.register("avg", statistics.mean)
     stats.register("std", statistics.stdev)
+    ITERATIONS=20000
     CXPB=0.5
     MUTPB=0.3
     print("index,fitness,diff")
@@ -148,6 +148,7 @@ def report():
 
     
 if __name__ == "__main__":
+    
 
     main()
     #print("\ntarget done!\n")
