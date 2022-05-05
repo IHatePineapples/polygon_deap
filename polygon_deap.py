@@ -123,11 +123,10 @@ def main():
 
 
         f = [x[0] for x in fitnesses]
-        diff = f - f0        
         #STAT_FITNESSES.append(f)
         #print("fit:", f[0]," i=",i)
 
-        print(f'{i},{f[0]},{f-f0}')
+        print(f'{i},{f[0]},{f[0]-f0}')
 
         f0 = f
 
