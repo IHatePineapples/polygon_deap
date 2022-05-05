@@ -21,9 +21,9 @@ STAT_FITNESSES=[]
 def make_polygon():
       # 0 <= R|G|B < 256, 30 <= A <= 60, 10 <= x|y < 190
 
-        R = random.randint(0,256)
-        G = random.randint(0,256)
-        B = random.randint(0,256)
+        R = random.randint(0,255)
+        G = random.randint(0,255)
+        B = random.randint(0,255)
 
         A = random.randint(30,60)
 
@@ -100,7 +100,7 @@ def main():
     toolbox.register("mutate", mutate, indpb=0.5)
     toolbox.register("mate", tools.cxTwoPoint)
 
-    population = toolbox.population(n=30)
+    population = toolbox.population(n=40)
 
 
     hof = tools.HallOfFame(3)
@@ -110,7 +110,8 @@ def main():
     ITERATIONS=20000
     CXPB=0.5
     MUTPB=0.3
-    print("index,fitness,diff")
+    print("index,fitness")
+    #print("index,fitness,diff")
     f0 = 0
     for i in range(ITERATIONS):
 
@@ -126,9 +127,10 @@ def main():
         #STAT_FITNESSES.append(f)
         #print("fit:", f[0]," i=",i)
 
-        print(f'{i},{f[0]},{f[0]-f0}')
+        print(f'{i},{f[0]}')
+        #print(f'{i},{f[0]},{f[0]-f0}')
 
-        f0 = f[0]
+        #f0 = f[0]
 
         # print("avg:", statistics.mean(f))
 
