@@ -100,7 +100,7 @@ def main():
     toolbox.register("mutate", mutate, indpb=0.5)
     toolbox.register("mate", tools.cxTwoPoint)
 
-    population = toolbox.population(n=100)
+    population = toolbox.population(n=70)
 
 
     hof = tools.HallOfFame(3)
