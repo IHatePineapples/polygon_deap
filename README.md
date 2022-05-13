@@ -10,3 +10,19 @@ Task
 Given a target image (badly) drawn by Leonardo by hand, creates its faithful digital representation using no more than 100 semi-transparent polygons.
 
 Using evolutionary algorithms (Python modules: [DEAP](https://deap.readthedocs.org/) (Links to an external site.)) to achieve good results. There are many possible approaches to this problem, and it is unclear which will work best. Therefore, experimentation is needed.
+
+## Installation
+
+You need additionnal package in order for the algorithm to run, these include Pillow and DEAP
+    
+
+    #!/bin/sh
+    # Guide for Linux, adapt for other OSes
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    python polygon_deap.py
+
+## Configuration
+
+You can alter specific parameters and values from the config.ini (e.g. number of iterations, extra-verbose)
