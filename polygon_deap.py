@@ -20,6 +20,7 @@ TARGET = Image.open(conf.get('main', 'target'))
 START_POLYGON = conf.getint('main', 'starting-polygons')
 ITERATIONS=conf.getint('main','number-of-iterations')
 nolimit = conf.getboolean('main', 'no-limit')
+verbose = conf.getboolean('main', 'verbose')
 
 MAX = 255 * 200 * 200
 TARGET.load()
@@ -95,6 +96,10 @@ def evaluate(solution):
 def main():
     CXPB=conf.getfloat('main', 'crossover-probability')
     MUTPB=conf.getfloat('main', 'mutation-probability')
+    MAX_POLYGONS=conf.getint('main', 'max-polygons')
+    IT_OVERRIDE = conf.getboolean('override', 'iteration-count-override')
+    POP_SIZE = conf.getint('main', 'population-size')
+    TOUNR_SIZE = conf.getint('main', 'tournament-size')
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -102,7 +107,7 @@ def main():
     toolbox = base.Toolbox()
 
     toolbox.register("evaluate", evaluate)
-    toolbox.register("select", tools.selTournament, tournsize=20)
+    toolbox.register("select", tools.selTournament, tournsize=TOUNR_SIZE)
 
     pool = multiprocessing.Pool(conf.getint('main', 'jobs'))
     toolbox.register("map", pool.map)
@@ -113,18 +118,23 @@ def main():
     toolbox.register("mutate", mutate, indpb=0.3)
     toolbox.register("mate", tools.cxOnePoint)
 
-    population = toolbox.population(n=100)
+    population = toolbox.population(n=POP_SIZE)
 
 
     #hof = tools.HallOfFame(3)
     stats = tools.Statistics(lambda x: x.fitness.values[0])
     #stats.register("avg", statistics.mean)
     stats.register("std", statistics.stdev)
-    print("index,fitness")
+    if verbose:
+        print("index,fitness,avg-fitness,avg-polygons")
+    else:
+        print("index,fitness")
+
     #print("index,fitness,diff")
     # for i in range(ITERATIONS):
     i=0 
-    while (i <ITERATIONS):
+    p=[0,0,0]
+    while (i <ITERATIONS or (statistics.median(p) <MAX_POLYGONS and not nolimit or IT_OVERRIDE)):
         offspring = algorithms.varAnd(population, toolbox, cxpb=CXPB, mutpb=MUTPB)
         fitnesses = list(toolbox.map(toolbox.evaluate, offspring))
 
@@ -138,8 +148,10 @@ def main():
         #STAT_FITNESSES.append(f)
         #print("fit:", f[0]," i=",i)
 
-        print(f'{i},{f[0]},{statistics.mean(p)}')
-
+        if verbose:
+            print(f'{i},{f[0]},{statistics.fmean(f)},{statistics.fmean(p)}')
+        else:
+            print(f'{i},{f[0]}')
         #print(f'{i},{f[0]},{f[0]-f0}')
 
         #f0 = f[0]
