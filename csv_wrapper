@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# Shell script designed to wrap around the algorithm
+# The idea is to redirect the algorithm's csv-formatted output to a file
+# that can then be used for graphing + plotting purpose and/or data representation
+#
+# This script also assumes you only want data from the reference algorithm and not the fast_polygon_deap one
+python polygon_deap.py > out/$(date -I)-$(echo $RANDOM).csv
