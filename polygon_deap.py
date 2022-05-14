@@ -54,9 +54,6 @@ def make_polygon():
 
 def mutate(solution, indpb):
     r = random.random()
-    f = 0
-    if FAST_END:
-        f = evaluate(solution)
 
     if r < 0.25:
         polygon = random.choice(solution)
@@ -78,9 +75,11 @@ def mutate(solution, indpb):
     elif (nolimit or START_POLYGON <= len(solution) < MAX_POLYGONS ) and random.random() < NEW_POLYPB: 
         new_polygon = make_polygon()
         solution.append(new_polygon)
-    elif FAST_END and f[0] > 0.95:
-        new_polygon = make_polygon()
-        solution.append(new_polygon)
+    elif FAST_END:
+        f = evaluate(solution)
+        if f[0] > 0.95:
+            new_polygon = make_polygon()
+            solution.append(new_polygon)
     return solution,
 
 def draw(solution):
