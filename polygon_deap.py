@@ -21,6 +21,7 @@ START_POLYGON = conf.getint('main', 'starting-polygons')
 ITERATIONS=conf.getint('main','number-of-iterations')
 nolimit = conf.getboolean('main', 'no-limit')
 verbose = conf.getboolean('main', 'verbose')
+svg = conf.getboolean('main', 'draw-svg')
 
 MAX = 255 * 200 * 200
 TARGET.load()
@@ -84,6 +85,32 @@ def draw(solution):
 
     image.save("out/solution.png")
     return image
+
+def draw_svg(solution):
+    with open("out/svg.html", "w") as out:
+        out.write('''
+<!DOCTYPE html>
+<html>
+    <body>
+        <svg width="200" height="200">
+        ''')
+        for polygon in solution:
+            colors = polygon[0]
+            coords1 = polygon[1] 
+            coords2 = polygon[2] 
+            coords3 = polygon[3] 
+            out.write(f'''
+            <polygon points="{coords1[0]},{coords1[1]} {coords2[0]},{coords2[1]} {coords3[0]},{coords3[1]}" style="fill:rgb({colors[0]},{colors[1]},{colors[2]}); fill-opacity:{colors[3]/256}" />
+            
+            ''')
+
+        
+        
+        out.write('''
+        </svg>
+    </body>
+</html>
+''')
 
 def evaluate(solution):
 
@@ -164,8 +191,10 @@ def main():
     #population, log = algorithms.eaSimple(population, toolbox, cxpb=0.5, mutpb=0.1,
     #    ngen=50, stats=stats, halloffame=hof, verbose=False)
 
-
-    draw(population[0])
+    if svg:
+        draw_svg(population[0]) 
+    else:
+        draw(population[0])
     #print(hof)
 def report():
     csv = open("out/graph.csv","w")
