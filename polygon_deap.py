@@ -16,12 +16,14 @@ STAT_FITNESSES=[]
 conf = ConfigParser()
 conf.read("config.ini")
 
+NEW_POLYPB = conf.getfloat('main', 'new-polygon-probability')
 TARGET = Image.open(conf.get('main', 'target'))
 START_POLYGON = conf.getint('main', 'starting-polygons')
 ITERATIONS=conf.getint('main','number-of-iterations')
 nolimit = conf.getboolean('main', 'no-limit')
 verbose = conf.getboolean('main', 'verbose')
 svg = conf.getboolean('main', 'draw-svg')
+FAST_END = conf.getboolean('override', 'faster-ending-override')
 
 MAX = 255 * 200 * 200
 TARGET.load()
@@ -51,6 +53,9 @@ def make_polygon():
 
 def mutate(solution, indpb):
     r = random.random()
+    f = 0
+    if FAST_END:
+        f = evaluate(solution)
 
     if r < 0.25:
         polygon = random.choice(solution)
@@ -72,7 +77,10 @@ def mutate(solution, indpb):
     elif (nolimit or 5 < len(solution) < 100) and 0.51 < r < 0.75 :
         # reorder polygons
         tools.mutShuffleIndexes(solution, indpb)
-    elif random.random() < 0.16:  
+    elif random.random() < NEW_POLYPB: 
+        new_polygon = make_polygon()
+        solution.append(new_polygon)
+    elif FAST_END and not nolimit and f[0] > 0.95:
         new_polygon = make_polygon()
         solution.append(new_polygon)
     return solution,
@@ -174,16 +182,16 @@ def main():
         #STAT_FITNESSES.append(f)
         #print("fit:", f[0]," i=",i)
 
+        fmean = statistics.fmean(f)
         if verbose:
             p = [len(x) for x in offspring]
-            print(f'{i},{f[0]},{statistics.fmean(f)},{statistics.fmean(p)}')
+            print(f'{i},{f[0]},{fmean},{statistics.fmean(p)}')
         else:
             print(f'{i},{f[0]}')
         #print(f'{i},{f[0]},{f[0]-f0}')
 
         #f0 = f[0]
-
-        if statistics.mean(f) > 0.94:
+        if fmean > 0.94:
             CXPB = 0
             MUTPB = 0.5
         i+=1
