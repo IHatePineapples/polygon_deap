@@ -71,7 +71,7 @@ def mutate(solution, indpb):
     elif (nolimit or 5 < len(solution) < 100) and 0.51 < r < 0.75 :
         # reorder polygons
         tools.mutShuffleIndexes(solution, indpb)
-    elif random.random() < 0.08:  
+    elif random.random() < 0.16:  
         new_polygon = make_polygon()
         solution.append(new_polygon)
     return solution,
