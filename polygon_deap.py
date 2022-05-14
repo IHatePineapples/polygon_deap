@@ -25,6 +25,9 @@ verbose = conf.getboolean('main', 'verbose')
 svg = conf.getboolean('main', 'draw-svg')
 FAST_END = conf.getboolean('override', 'faster-ending-override')
 MAX_POLYGONS=conf.getint('main', 'max-polygons')
+FOUR_SIDED = conf.getboolean('main', 'rectangles')
+SMART = conf.getboolean('main', 'smart-csv')
+
 
 MAX = 255 * 200 * 200
 TARGET.load()
@@ -32,24 +35,27 @@ TARGET.load()
 
 def make_polygon():
       # 0 <= R|G|B < 256, 30 <= A <= 60, 10 <= x|y < 190
-
+      
         R = random.randint(0,255)
         G = random.randint(0,255)
         B = random.randint(0,255)
-
-        A = random.randint(30,60)
-
-
+        A = random.randint(10,60)
+            
         x1 = random.randint(10,190)
         y1 = random.randint(10,190)
-
-        x2 = random.randint(10,190)
-        y2 = random.randint(10,190)
-
         x3 = random.randint(10,190)
         y3 = random.randint(10,190)
 
-        return [(R, G, B, A), (x1, y1), (x2, y2), (x3, y3)]
+        if FOUR_SIDED:
+            x2 = x3 
+            y2 = y1
+            x4 = x1
+            y4 = y3
+            return [(R, G, B, A), (x1, y1), (x2, y2), (x3, y3), (x4,y4)]
+        else: # TRIANGLE
+            x2 = random.randint(10,190)
+            y2 = random.randint(10,190)
+            return [(R, G, B, A), (x1, y1), (x2, y2), (x3, y3)]
 
 
 def mutate(solution, indpb):
@@ -181,10 +187,12 @@ def main():
         #print("fit:", f[0]," i=",i)
 
         fmean = statistics.fmean(f)
-        if verbose:
+        variance = statistics.variance(f)
+        deviation = f[0] - f0
+        if verbose and not SMART:
             p = [len(x) for x in offspring]
-            print(f'{i},{f[0]},{fmean},{statistics.fmean(p)},{f[0]-f0}')
-        else:
+            print(f'{i},{f[0]},{fmean},{statistics.median_high(p)},{deviation},{variance}')
+        elif SMART and deviation != 0.0 and abs(deviation)>10**(-5) and fmean != f[0]:
             print(f'{i},{f[0]}')
         #print(f'{i},{f[0]},{f[0]-f0}')
 
