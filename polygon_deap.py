@@ -171,11 +171,11 @@ def main():
 
 
         f = [x[0] for x in fitnesses]
-        p = [len(x) for x in offspring]
         #STAT_FITNESSES.append(f)
         #print("fit:", f[0]," i=",i)
 
         if verbose:
+            p = [len(x) for x in offspring]
             print(f'{i},{f[0]},{statistics.fmean(f)},{statistics.fmean(p)}')
         else:
             print(f'{i},{f[0]}')
@@ -188,21 +188,12 @@ def main():
             MUTPB = 0.5
         i+=1
 
-    #population, log = algorithms.eaSimple(population, toolbox, cxpb=0.5, mutpb=0.1,
-    #    ngen=50, stats=stats, halloffame=hof, verbose=False)
 
     if svg:
         draw_svg(population[0]) 
     else:
         draw(population[0])
-    #print(hof)
-def report():
-    csv = open("out/graph.csv","w")
-    csv.write("i,fitness")
-    a = 1
-    for i[0] in STAT_FITNESSES:
-        csv.write(f'{a},{i}\n')
-        a=+1
+
 
     
 if __name__ == "__main__":
