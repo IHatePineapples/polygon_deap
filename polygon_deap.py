@@ -75,10 +75,10 @@ def mutate(solution, indpb):
         tools.mutGaussian(colors, 0, 20, indpb)
         colors = [max(0, min(int(x),255)) for x in colors]
         polygon[0] = (colors[0],colors[1],colors[2],colors[3])
-    elif (nolimit or 5 < len(solution) < MAX_POLYGONS ) and 0.50 <= r < 0.75 :
+    elif  0.50 <= r < 0.75 :
         # reorder polygons
         tools.mutShuffleIndexes(solution, indpb)
-    elif random.random() < NEW_POLYPB: 
+    elif (nolimit or START_POLYGON < len(solution) < MAX_POLYGONS ) and random.random() < NEW_POLYPB: 
         new_polygon = make_polygon()
         solution.append(new_polygon)
     elif FAST_END and not nolimit and f[0] > 0.95:
