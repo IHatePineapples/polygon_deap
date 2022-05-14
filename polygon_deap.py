@@ -24,6 +24,7 @@ nolimit = conf.getboolean('main', 'no-limit')
 verbose = conf.getboolean('main', 'verbose')
 svg = conf.getboolean('main', 'draw-svg')
 FAST_END = conf.getboolean('override', 'faster-ending-override')
+MAX_POLYGONS=conf.getint('main', 'max-polygons')
 
 MAX = 255 * 200 * 200
 TARGET.load()
@@ -63,7 +64,7 @@ def mutate(solution, indpb):
         tools.mutGaussian(coords, 0, 20, indpb)
         coords = [max(0, min(int(x), 200)) for x in coords]
         polygon[1:] = list(zip(coords[::2], coords[1::2]))
-    elif 0.26 < r < 0.50:
+    elif 0.25 <= r < 0.50:
         #colors = [x for color in polygon[0] for x in color]
         #tools.mutGaussian(colors, 0, 10, indpb)
         #colors = [max(0, min(int(x), 255)) for x in colors]
@@ -74,7 +75,7 @@ def mutate(solution, indpb):
         tools.mutGaussian(colors, 0, 20, indpb)
         colors = [max(0, min(int(x),255)) for x in colors]
         polygon[0] = (colors[0],colors[1],colors[2],colors[3])
-    elif (nolimit or 5 < len(solution) < 100) and 0.51 < r < 0.75 :
+    elif (nolimit or 5 < len(solution) < MAX_POLYGONS ) and 0.50 <= r < 0.75 :
         # reorder polygons
         tools.mutShuffleIndexes(solution, indpb)
     elif random.random() < NEW_POLYPB: 
@@ -131,7 +132,6 @@ def evaluate(solution):
 def main():
     CXPB=conf.getfloat('main', 'crossover-probability')
     MUTPB=conf.getfloat('main', 'mutation-probability')
-    MAX_POLYGONS=conf.getint('main', 'max-polygons')
     IT_OVERRIDE = conf.getboolean('override', 'iteration-count-override')
     POP_SIZE = conf.getint('main', 'population-size')
     TOUNR_SIZE = conf.getint('main', 'tournament-size')
@@ -169,7 +169,7 @@ def main():
     # for i in range(ITERATIONS):
     i=0 
     p=[0,0,0]
-    while (i <ITERATIONS or (statistics.median(p) <MAX_POLYGONS and not nolimit or IT_OVERRIDE)):
+    while (i <ITERATIONS or (not nolimit and IT_OVERRIDE and statistics.median(p) <MAX_POLYGONS)):
         offspring = algorithms.varAnd(population, toolbox, cxpb=CXPB, mutpb=MUTPB)
         fitnesses = list(toolbox.map(toolbox.evaluate, offspring))
 
