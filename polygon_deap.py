@@ -65,10 +65,7 @@ def mutate(solution, indpb):
         coords = [max(0, min(int(x), 200)) for x in coords]
         polygon[1:] = list(zip(coords[::2], coords[1::2]))
     elif 0.25 <= r < 0.50:
-        #colors = [x for color in polygon[0] for x in color]
-        #tools.mutGaussian(colors, 0, 10, indpb)
-        #colors = [max(0, min(int(x), 255)) for x in colors]
-        #polygon[0] = (colors[0],colors[1],colors[2],colors[3])
+
         # change color 
         polygon = random.choice(solution)
         colors = [x for color in polygon[0] for x in polygon[0]]
