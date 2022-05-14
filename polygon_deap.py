@@ -135,6 +135,7 @@ def main():
     IT_OVERRIDE = conf.getboolean('override', 'iteration-count-override')
     POP_SIZE = conf.getint('main', 'population-size')
     TOUNR_SIZE = conf.getint('main', 'tournament-size')
+    PLEASE = conf.getboolean('override', 'over-95-please-override')
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -155,13 +156,12 @@ def main():
 
     population = toolbox.population(n=POP_SIZE)
 
-
     #hof = tools.HallOfFame(3)
     stats = tools.Statistics(lambda x: x.fitness.values[0])
     #stats.register("avg", statistics.mean)
     stats.register("std", statistics.stdev)
     if verbose:
-        print("index,fitness,avg-fitness,avg-polygons")
+        print("index,fitness,avg-fitness,avg-polygons,diff")
     else:
         print("index,fitness")
 
@@ -169,7 +169,9 @@ def main():
     # for i in range(ITERATIONS):
     i=0 
     p=[0,0,0]
-    while (i <ITERATIONS or (not nolimit and IT_OVERRIDE and statistics.median(p) <MAX_POLYGONS)):
+    fmean = 0
+    f0 = 0
+    while (i <ITERATIONS or (not nolimit and IT_OVERRIDE and statistics.median(p) <MAX_POLYGONS) or (PLEASE and fmean < 0.95)):
         offspring = algorithms.varAnd(population, toolbox, cxpb=CXPB, mutpb=MUTPB)
         fitnesses = list(toolbox.map(toolbox.evaluate, offspring))
 
@@ -185,12 +187,12 @@ def main():
         fmean = statistics.fmean(f)
         if verbose:
             p = [len(x) for x in offspring]
-            print(f'{i},{f[0]},{fmean},{statistics.fmean(p)}')
+            print(f'{i},{f[0]},{fmean},{statistics.fmean(p)},{f[0]-f0}')
         else:
             print(f'{i},{f[0]}')
         #print(f'{i},{f[0]},{f[0]-f0}')
 
-        #f0 = f[0]
+        f0 = f[0]
         if fmean > 0.94:
             CXPB = 0
             MUTPB = 0.5
