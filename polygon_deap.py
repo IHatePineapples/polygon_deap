@@ -136,6 +136,7 @@ def main():
     POP_SIZE = conf.getint('main', 'population-size')
     TOUNR_SIZE = conf.getint('main', 'tournament-size')
     PLEASE = conf.getboolean('override', 'over-95-please-override')
+    VIDEO = conf.getboolean('main', 'video')
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -194,6 +195,16 @@ def main():
         if fmean > 0.94:
             CXPB = 0
             MUTPB = 0.5
+
+        
+        if VIDEO:
+            image = Image.new("RGB", (200, 200))
+            canvas = ImageDraw.Draw(image, "RGBA")
+            for polygon in [x[0] for x in offspring]:
+                canvas.polygon(polygon[1:], fill=polygon[0])
+
+            image.save(f"out/tmp/{ITERATIONS*ITERATIONS + i}.png")
+
         i+=1
 
 
@@ -201,10 +212,28 @@ def main():
         draw_svg(population[0]) 
     else:
         draw(population[0])
+    
+    if VIDEO:
+        import cv2
+        import numpy as np
+        import glob
+
+        frameSize = (200, 200)
+
+        out = cv2.VideoWriter('out/timelapse.avi',cv2.VideoWriter_fourcc(*'DIVX'), 60, frameSize)
+
+        for filename in glob.glob('out/tmp/*.png'):
+            img = cv2.imread(filename)
+            out.write(img)
+
+        out.release()
 
 
     
 if __name__ == "__main__":
+    import os
+
+    os.system("mkdir out/ &> /dev/null; mkdir out/tmp/ &> /dev/null")
     main()
     exit(0)
 
