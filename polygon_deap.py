@@ -200,7 +200,7 @@ def main():
         if VIDEO:
             image = Image.new("RGB", (200, 200))
             canvas = ImageDraw.Draw(image, "RGBA")
-            for polygon in [x[0] for x in offspring]:
+            for polygon in [x[0] for x in population]:
                 canvas.polygon(polygon[1:], fill=polygon[0])
 
             image.save(f"out/tmp/{ITERATIONS*ITERATIONS + i}.png")
