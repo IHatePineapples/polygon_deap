@@ -11,8 +11,6 @@ from deap import creator, base, tools, algorithms
 from PIL import Image, ImageDraw, ImageChops
 from configparser import ConfigParser
 
-STAT_FITNESSES=[]
-
 conf = ConfigParser()
 conf.read("config.ini")
 
@@ -20,9 +18,9 @@ NEW_POLYPB = conf.getfloat('main', 'new-polygon-probability')
 TARGET = Image.open(conf.get('main', 'target'))
 START_POLYGON = conf.getint('main', 'starting-polygons')
 ITERATIONS=conf.getint('main','number-of-iterations')
-nolimit = conf.getboolean('main', 'no-limit')
-verbose = conf.getboolean('main', 'verbose')
-svg = conf.getboolean('main', 'draw-svg')
+NOLIMIT = conf.getboolean('main', 'no-limit')
+VERBOSE = conf.getboolean('main', 'verbose')
+SVG = conf.getboolean('main', 'draw-svg')
 FAST_END = conf.getboolean('override', 'faster-ending-override')
 MAX_POLYGONS=conf.getint('main', 'max-polygons')
 FOUR_SIDED = conf.getboolean('main', 'rectangles')
@@ -78,7 +76,7 @@ def mutate(solution, indpb):
     elif r < 0.75 :
         # reorder polygons
         tools.mutShuffleIndexes(solution, indpb)
-    elif (nolimit or START_POLYGON <= len(solution) < MAX_POLYGONS ) and random.random() < NEW_POLYPB: 
+    elif (NOLIMIT or START_POLYGON <= len(solution) < MAX_POLYGONS ) and random.random() < NEW_POLYPB: 
         new_polygon = make_polygon()
         solution.append(new_polygon)
     elif FAST_END:
@@ -162,18 +160,16 @@ def main():
     stats = tools.Statistics(lambda x: x.fitness.values[0])
     #stats.register("avg", statistics.mean)
     stats.register("std", statistics.stdev)
-    if verbose:
+    if VERBOSE:
         print("index,fitness,avg-fitness,avg-polygons,diff")
     else:
         print("index,fitness")
 
-    #print("index,fitness,diff")
-    # for i in range(ITERATIONS):
     i=0 
     p=[0,0,0]
     fmean = 0
     f0 = 0
-    while (i <ITERATIONS or (not nolimit and IT_OVERRIDE and statistics.median(p) <MAX_POLYGONS) or (PLEASE and fmean < 0.95)):
+    while (i <ITERATIONS or (not NOLIMIT and IT_OVERRIDE and statistics.median(p) <MAX_POLYGONS) or (PLEASE and fmean < 0.95)):
         offspring = algorithms.varAnd(population, toolbox, cxpb=CXPB, mutpb=MUTPB)
         fitnesses = list(toolbox.map(toolbox.evaluate, offspring))
 
@@ -183,13 +179,11 @@ def main():
 
 
         f = [x[0] for x in fitnesses]
-        #STAT_FITNESSES.append(f)
-        #print("fit:", f[0]," i=",i)
 
         fmean = statistics.fmean(f)
         variance = statistics.variance(f)
         deviation = f[0] - f0
-        if verbose and not SMART:
+        if VERBOSE and not SMART:
             p = [len(x) for x in offspring]
             print(f'{i},{f[0]},{fmean},{statistics.median_high(p)},{deviation},{variance}')
         elif SMART and deviation != 0.0 and abs(deviation)>10**(-5) and fmean != f[0]:
@@ -203,7 +197,7 @@ def main():
         i+=1
 
 
-    if svg:
+    if SVG:
         draw_svg(population[0]) 
     else:
         draw(population[0])
