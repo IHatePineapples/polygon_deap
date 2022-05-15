@@ -86,13 +86,13 @@ def mutate(solution, indpb):
             solution.append(new_polygon)
     return solution,
 
-def draw(solution):
+def draw(solution,save):
     image = Image.new("RGB", (200, 200))
     canvas = ImageDraw.Draw(image, "RGBA")
     for polygon in solution:
         canvas.polygon(polygon[1:], fill=polygon[0])
-
-    image.save("out/solution.png")
+    if save:
+        image.save("out/solution.png")
     return image
 
 def draw_svg(solution):
@@ -123,7 +123,7 @@ def draw_svg(solution):
 
 def evaluate(solution):
 
-    image = draw(solution)
+    image = draw(solution,save=False)
     diff = ImageChops.difference(image, TARGET)
     hist = diff.convert("L").histogram()
     count = sum(i * n for i, n in enumerate(hist))
@@ -211,7 +211,7 @@ def main():
     if SVG:
         draw_svg(population[0]) 
     else:
-        draw(population[0])
+        draw(population[0],save=True)
     
     if VIDEO:
         import cv2
@@ -227,6 +227,8 @@ def main():
             out.write(img)
 
         out.release()
+
+        os.system("rm out/tmp -rf")
 
 
     
