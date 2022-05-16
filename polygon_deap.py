@@ -3,6 +3,7 @@
 
 """
 import sys
+import time
 import random
 import statistics
 import multiprocessing
@@ -25,6 +26,8 @@ FAST_END = conf.getboolean('override', 'faster-ending-override')
 MAX_POLYGONS=conf.getint('main', 'max-polygons')
 FOUR_SIDED = conf.getboolean('main', 'rectangles')
 SMART = conf.getboolean('main', 'smart-csv')
+VIDEO = conf.getboolean('main', 'video')
+VIDEO_ARRAY=[]
 
 
 MAX = 255 * 200 * 200
@@ -91,6 +94,11 @@ def draw(solution,save):
     canvas = ImageDraw.Draw(image, "RGBA")
     for polygon in solution:
         canvas.polygon(polygon[1:], fill=polygon[0])
+    if VIDEO and save:
+        fname = f"out/tmp/{time.time()}.png"
+        image.save(fname)
+        VIDEO_ARRAY.append(fname)
+
     if save:
         image.save("out/solution.png")
     return image
@@ -129,6 +137,17 @@ def evaluate(solution):
     count = sum(i * n for i, n in enumerate(hist))
     return (MAX - count) / MAX,
 
+def max_fitness(fitnesses:list):
+
+    max = fitnesses[0]
+
+    for f in fitnesses:
+        if f > max:
+            max = f 
+    
+    return (max, fitnesses.index(max)) 
+
+
 def main():
     CXPB=conf.getfloat('main', 'crossover-probability')
     MUTPB=conf.getfloat('main', 'mutation-probability')
@@ -136,7 +155,6 @@ def main():
     POP_SIZE = conf.getint('main', 'population-size')
     TOUNR_SIZE = conf.getint('main', 'tournament-size')
     PLEASE = conf.getboolean('override', 'over-95-please-override')
-    VIDEO = conf.getboolean('main', 'video')
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -144,6 +162,7 @@ def main():
     toolbox = base.Toolbox()
 
     toolbox.register("evaluate", evaluate)
+
     toolbox.register("select", tools.selTournament, tournsize=TOUNR_SIZE)
 
     pool = multiprocessing.Pool(conf.getint('main', 'jobs'))
@@ -162,9 +181,9 @@ def main():
     #stats.register("avg", statistics.mean)
     stats.register("std", statistics.stdev)
     if VERBOSE:
-        print("index,fitness,avg-fitness,avg-polygons,diff")
+        print("index,best-individual-fitness,avg-fitness,avg-polygons,diff")
     else:
-        print("index,fitness")
+        print("index,best-individual-fitness")
 
     i=0 
     p=[0,0,0]
@@ -180,31 +199,28 @@ def main():
 
 
         f = [x[0] for x in fitnesses]
+        best_f = max_fitness(f)
 
         fmean = statistics.fmean(f)
         variance = statistics.variance(f)
-        deviation = f[0] - f0
+        deviation = f[best_f[1]] - f0
         if VERBOSE and not SMART:
             p = [len(x) for x in offspring]
-            print(f'{i},{f[0]},{fmean},{statistics.median_high(p)},{deviation},{variance}')
+            print(f'{i},{f[best_f[1]]},{fmean},{statistics.median_high(p)},{deviation},{variance}')
+        elif VERBOSE and SMART and abs(deviation)>10**(-5) and fmean != f[0]:
+            p = [len(x) for x in offspring]
+            print(f'{i},{f[best_f[1]]},{fmean},{statistics.median_high(p)},{deviation},{variance}')
         elif SMART and deviation != 0.0 and abs(deviation)>10**(-5) and fmean != f[0]:
             print(f'{i},{f[0]}')
-        #print(f'{i},{f[0]},{f[0]-f0}')
 
-        f0 = f[0]
         if fmean > 0.94:
             CXPB = 0
             MUTPB = 0.5
 
-        
         if VIDEO:
-            image = Image.new("RGB", (200, 200))
-            canvas = ImageDraw.Draw(image, "RGBA")
-            for polygon in [x[0] for x in population]:
-                canvas.polygon(polygon[1:], fill=polygon[0])
+            draw(population[best_f[1]], True)
 
-            image.save(f"out/tmp/{ITERATIONS*ITERATIONS + i}.png")
-
+        f0 = best_f[0]
         i+=1
 
 
@@ -220,9 +236,10 @@ def main():
 
         frameSize = (200, 200)
 
-        out = cv2.VideoWriter('out/timelapse.avi',cv2.VideoWriter_fourcc(*'DIVX'), 60, frameSize)
+        out = cv2.VideoWriter('out/timelapse.avi',cv2.VideoWriter_fourcc(*'DIVX'), 23, frameSize)
 
-        for filename in glob.glob('out/tmp/*.png'):
+
+        for filename in VIDEO_ARRAY:
             img = cv2.imread(filename)
             out.write(img)
 
